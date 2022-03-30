@@ -4,11 +4,11 @@ datasets = ['cifar10']
 
 methods = ['Vanilla',
            'TemperatureScaling',
-           'VectorScaling',
+#            'VectorScaling',
 #            'MatrixScaling',
 #            'MatrixScalingODIR',
 #            'DirichletL2',
-#            'DirichletODIR',
+           'DirichletODIR',
           ]
 architectures = [
     'resnet20',

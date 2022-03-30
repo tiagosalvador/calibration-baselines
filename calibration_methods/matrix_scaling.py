@@ -21,5 +21,5 @@ def MatrixScalingODIR(num_classes):
     mus = np.array([10**i for i in np.arange(start_from, 7)])
     gscv = GridSearchCV(calibrator,
                         param_grid={'reg_lambda':  lambdas,'reg_mu': mus},
-                        cv=skf, scoring='neg_log_loss', refit=True, verbose=0, n_jobs=20)
+                        cv=skf, scoring='neg_log_loss', refit=True, verbose=0, n_jobs=5)
     return gscv

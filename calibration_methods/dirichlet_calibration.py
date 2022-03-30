@@ -17,7 +17,7 @@ def DirichletODIR(num_classes):
     mus = np.array([10**i for i in np.arange(start_from, 7)])
     gscv = GridSearchCV(calibrator,
                         param_grid={'reg_lambda':  lambdas,'reg_mu': mus},
-                        cv=skf, scoring='neg_log_loss', refit=True, verbose=0, n_jobs=20)
+                        cv=skf, scoring='neg_log_loss', refit=True, verbose=0, n_jobs=5)
     return gscv
 
 def DirichletL2(num_classes):
@@ -32,5 +32,5 @@ def DirichletL2(num_classes):
     lambdas = sorted(np.concatenate([lambdas, lambdas*0.25, lambdas*0.5]))
     gscv = GridSearchCV(calibrator,
                         param_grid={'reg_lambda':  lambdas},
-                        cv=skf, scoring='neg_log_loss', refit=True, verbose=0, n_jobs=20)
+                        cv=skf, scoring='neg_log_loss', refit=True, verbose=0, n_jobs=5)
     return gscv
