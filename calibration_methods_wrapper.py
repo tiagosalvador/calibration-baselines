@@ -8,8 +8,6 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 
-from imagenetv2 import ImageNetv2
-
 import numpy as np
 import os
 
@@ -62,7 +60,7 @@ def get_calibrators(methods, net, ds_info):
                 np.save(file, calibrator_temp)
     return calibrators
 
-def get_results(method, features_test, logits_test, labels_test, calibrator, net, ds_info, corruption, intensity):
+def get_results(method, features_test, logits_test, labels_test, calibrator, net, ds_info):
     if method == 'Vanilla':
         results = get_uncertainty_measures(logits_test, labels_test)
     else:
