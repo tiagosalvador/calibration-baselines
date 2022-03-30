@@ -46,4 +46,3 @@ To be added:
 Given that the focus is on post-hoc calibration methods, we use pre-trained models, which are obtained from [imgclsmob](https://github.com/osmr/imgclsmob), (already cloned into this repo).
 
 The code for Matrix Scaling, Diriclet Calibration and respective variants was adapted from official code repository for Dirichlet Calbiration: [Dirichlet Calibration Python implementation](https://github.com/dirichletcal/dirichlet_python).
-
