@@ -38,17 +38,31 @@ def small_large_split(y_data, nsamples, ds_info):
     return indices_small, indices_large
 
 
-def get_loader(subset, ds_info, shuffle=False, transform=None):
+def get_loader(subset, ds_info, shuffle=False):
     if subset != 'train':
         indices = ds_info['indices_'+subset]
     if ds_info['name'] == 'cifar10':
-        if transform is None:
-            transform = ds_info['transform']
+        transform = ds_info['transform']
         dataset = torchvision.datasets.CIFAR10(root=ds_info['root_folder_datasets'], train=subset=='train',
                                                download=False, transform=transform);
         if subset != 'train':
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.targets)[indices]
+    elif ds_info['name'] == 'cifar100':
+        transform = ds_info['transform']
+        dataset = torchvision.datasets.CIFAR100(root=ds_info['root_folder_datasets'], train=subset=='train',
+                                               download=False, transform=transform);
+        if subset != 'train':
+            dataset.data = dataset.data[indices]
+            dataset.targets = np.array(dataset.targets)[indices]
+    elif ds_info['name'] == 'svhn':
+        transform = ds_info['transform']
+        split = 'test' if subset == 'cal' else subset
+        dataset = torchvision.datasets.SVHN(root=ds_info['root_folder_datasets'], split=split,
+                                               download=False, transform=transform);
+        if subset != 'train':
+            dataset.data = dataset.data[indices]
+            dataset.targets = np.array(dataset.labels)[indices]
     elif ds_info['name'] == 'imagenet':
         if subset == 'train':
             dataset_dir = os.path.join(ds_info['root_folder_datasets'], 'train')
