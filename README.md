@@ -20,6 +20,14 @@ Currently the following methods are included:
 
 Create a folder named 'datasets' and place your datasets there.
 
+## Methods
+
+Currently the following datasets are supported:
+ - CIFAR-10
+ - CIFAR-100
+ - SVHN
+ - ImageNet
+
 ## Training/Evaluation
 
 To train and evaluate the post-hoc calibration methods:
