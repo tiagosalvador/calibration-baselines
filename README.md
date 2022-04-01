@@ -23,10 +23,20 @@ Create a folder named 'datasets' and place your datasets there.
 ## Methods
 
 Currently the following datasets are supported:
- - CIFAR-10
- - CIFAR-100
- - SVHN
- - ImageNet
+ - [CIFAR-10/100](https://www.cs.toronto.edu/~kriz/cifar.html)
+ - [SVHN](http://ufldl.stanford.edu/housenumbers)
+ - [ImageNet-1K](http://www.image-net.org)
+
+The following datasets are available to evaluate ood calibration:
+ -  [CIFAR-10/100-C](https://github.com/hendrycks/robustness)
+ -  [STL10](https://cs.stanford.edu/~acoates/stl10/)
+ -  [CIFAR-10.1 (v4, v6)](https://github.com/modestyachts/CIFAR-10.1)
+
+To download all datasets, except ImageNet, simply run
+```bash
+python download_datasets.py
+```
+
 
 ## Training/Evaluation
 
