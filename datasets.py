@@ -28,6 +28,14 @@ def load_ds_info(dataset, net=None):
             'batch_size': 256,
             'root_folder_datasets': os.path.join(root_folder_datasets, 'cifar10')
         }
+    elif dataset == 'cifar10-c':
+        ds_info = {
+            'name': 'cifar10-c',
+            'num_classes': 10,
+            'transform': transform_cifar10,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'cifar10-c')
+        }
     elif dataset == 'cifar100':
         ds_info = {
             'name': 'cifar100',

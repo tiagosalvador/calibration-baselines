@@ -18,7 +18,7 @@ import tarfile
 # dataset = torchvision.datasets.SVHN(root=os.path.join(root_folder_datasets, 'svhn'), split='test', download=True);
 
 # Download CIFAR-10-C
-# os.makedirs(os.path.join(root_folder_datasets, 'cifar10-c'), exist_ok=True)
+# os.makedirs(os.path.join(root_folder_datasets, desc='Extracting CIFAR-10-C', 'cifar10-c'), exist_ok=True)
 # url = 'https://zenodo.org/record/2535967/files/CIFAR-10-C.tar'
 # filename = wget.download(url, out=os.path.join('datasets', 'cifar10-c', 'cifar10-c.tar'))
 # with tarfile.open(name=os.path.join(root_folder_datasets, 'cifar10-c', 'cifar10-c.tar')) as tar:
@@ -26,7 +26,19 @@ import tarfile
 #     for member in tqdm.tqdm(iterable=tar.getmembers(), total=len(tar.getmembers())):
 #         # Extract member
 #         member.name = member.name.replace('CIFAR-10-C', 'cifar10-c')
-#         tar.extract(path=os.path.join(root_folder_datasets), member=member, desc='Extracting CIFAR-10-C')
+#         tar.extract(path=os.path.join(root_folder_datasets), member=member)
+
+
+# Download CIFAR-100-C
+# os.makedirs(os.path.join(root_folder_datasets, 'cifar100-c'), exist_ok=True)
+# url = 'https://zenodo.org/record/3555552/files/CIFAR-100-C.tar'
+# filename = wget.download(url, out=os.path.join('datasets', 'cifar100-c', 'cifar100-c.tar'))
+# with tarfile.open(name=os.path.join(root_folder_datasets, 'cifar100-c', 'cifar100-c.tar')) as tar:
+#     # Go over each member
+#     for member in tqdm.tqdm(iterable=tar.getmembers(), desc='Extracting CIFAR-100-C', total=len(tar.getmembers())):
+#         # Extract member
+#         member.name = member.name.replace('CIFAR-100-C', 'cifar100-c')
+#         tar.extract(path=os.path.join(root_folder_datasets), member=member)
 
 # Download STL10
 # dataset = torchvision.datasets.STL10(root=os.path.join(root_folder_datasets, 'stl10'), split='train', download=True);

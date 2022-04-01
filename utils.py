@@ -67,56 +67,88 @@ class CIFAR101(Dataset):
             target = self.target_transform(target)
 
         return img, target
+    
+class CIFARC(Dataset):
+    def __init__(self, root, corruption, intensity, transform=None, target_transform=None):
+        data = np.load(os.path.join(root,f'{corruption}.npy'))
+        data = data[(10000*(intensity-1)):(10000*intensity),:,:,:]
+        self.data =  data
+        targets = np.load(os.path.join(root,'labels.npy'))[(10000*(intensity-1)):(10000*intensity)]
+        self.targets =  torch.LongTensor(targets)
+        self.transform = transform
+        self.target_transform = target_transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):                       
+        """
+        Args:
+            index (int): Index
+        Returns:
+            tuple: (image, target) where target is index of the target class.
+        """
+        img, target = self.data[index], self.targets[index]
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
 
 
 def get_loader(subset, ds_info, shuffle=False):
     if (subset != 'train') and (subset != 'ood'):
         indices = ds_info['indices_'+subset]
     if ds_info['name'] == 'cifar10':
-        transform = ds_info['transform']
         dataset = torchvision.datasets.CIFAR10(root=ds_info['root_folder_datasets'], train=subset=='train',
-                                               download=False, transform=transform);
+                                               download=False, transform=ds_info['transform']);
+        if (subset != 'train') and (subset != 'ood'):
+            dataset.data = dataset.data[indices]
+            dataset.targets = np.array(dataset.targets)[indices]
+        else:
+            dataset.targets = np.array(dataset.targets)
+    elif (ds_info['name'] == 'cifar10-c') or (ds_info['name'] == 'cifar100-c'):
+        dataset = CIFARC(ds_info['root_folder_datasets'], ds_info['corruption'], ds_info['intensity'], 
+                           transform=ds_info['transform']);
         if (subset != 'train') and (subset != 'ood'):
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.targets)[indices]
         else:
             dataset.targets = np.array(dataset.targets)
     elif ds_info['name'] == 'cifar100':
-        transform = ds_info['transform']
         dataset = torchvision.datasets.CIFAR100(root=ds_info['root_folder_datasets'], train=subset=='train',
-                                               download=False, transform=transform);
+                                               download=False, transform=ds_info['transform']);
         if (subset != 'train') and (subset != 'ood'):
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.targets)[indices]
         else:
             dataset.targets = np.array(dataset.targets)
     elif ds_info['name'] == 'svhn':
-        transform = ds_info['transform']
         split = 'test' if (subset == 'cal' or subset == 'ood') else subset
         dataset = torchvision.datasets.SVHN(root=ds_info['root_folder_datasets'], split=split,
-                                               download=False, transform=transform);
+                                               download=False, transform=ds_info['transform']);
         if (subset != 'train') and (subset != 'ood'):
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.labels)[indices]
         else:
             dataset.targets = np.array(dataset.labels)
     elif ds_info['name'] == 'stl10':
-        transform = ds_info['transform']
         split = 'test' if (subset == 'cal' or subset == 'ood') else subset
         dataset = torchvision.datasets.STL10(root=ds_info['root_folder_datasets'], split=split,
-                                               download=False, transform=transform);
+                                               download=False, transform=ds_info['transform']);
         if (subset != 'train') and (subset != 'ood'):
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.labels)[indices]
         else:
             dataset.targets = np.array(dataset.labels)
     elif ds_info['name'] == 'cifar10.1-v4':
-        transform = ds_info['transform']
-        dataset = CIFAR101(root=ds_info['root_folder_datasets'], transform=transform);
+        dataset = CIFAR101(root=ds_info['root_folder_datasets'], transform=ds_info['transform']);
         dataset.targets = np.array(dataset.targets)
     elif ds_info['name'] == 'cifar10.1-v6':
-        transform = ds_info['transform']
-        dataset = CIFAR101(root=ds_info['root_folder_datasets'], transform=transform);
+        dataset = CIFAR101(root=ds_info['root_folder_datasets'], transform=ds_info['transform']);
         dataset.targets = np.array(dataset.targets)
     elif ds_info['name'] == 'imagenet':
         if subset == 'train':

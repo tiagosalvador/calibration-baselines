@@ -95,3 +95,47 @@ def evaluate_ood(iid_dataset, datasets, architectures, methods, splitIDs):
                                               net, 
                                               ds_info)
                         np.save(saveto, results)
+                        
+def evaluate_corrupted(dataset, corruptions, intensities, architectures, methods, splitIDs):
+    dataset_corrupted = dataset+'-c'
+    experiments_folder = os.path.join(experiments_folder_base, dataset)
+    create_folder(experiments_folder)
+    for architecture in tqdm(architectures, desc='Architectures'):
+        create_folder(os.path.join(experiments_folder, architecture))
+        net = load_net(dataset, architecture, device)
+        ds_info = load_ds_info(dataset, net)
+        for splitID in tqdm(splitIDs, desc='Splits', leave=False):
+            ds_info['folder'] = os.path.join(experiments_folder, architecture, f'splitID_{splitID}', dataset)
+            calibrators = get_calibrators(methods, net, ds_info)
+            folder_path_temp = os.path.join(experiments_folder, architecture, f'splitID_{splitID}', dataset_corrupted)
+            create_folder(folder_path_temp)
+            ds_info = load_ds_info(dataset_corrupted, net)
+            ds_info['indices_cal'] =  np.load(os.path.join(root_folder_data, experiment_name, dataset, f'val_test_{splitID}.npy'), allow_pickle=True).item()['val']
+            ds_info['indices_test'] =  np.load(os.path.join(root_folder_data, experiment_name, dataset, f'val_test_{splitID}.npy'), allow_pickle=True).item()['test']
+
+            for corruption in tqdm(corruptions, desc='Corruptions', leave=False):
+                ds_info['corruption'] = corruption
+                create_folder(os.path.join(folder_path_temp, corruption))
+                for intensity in tqdm(intensities, desc='Intensities', leave=False):
+                    ds_info['intensity'] = intensity
+                    create_folder(os.path.join(folder_path_temp, corruption, f'intensity_{intensity}', 'features_logits_labels'))
+                    ds_info['folder'] = os.path.join(folder_path_temp, corruption, f'intensity_{intensity}')
+                    features_test = None
+                    logits_test = None
+                    labels_test = None
+                    create_folder(os.path.join(folder_path_temp, corruption, f'intensity_{intensity}', 'results'))
+                    for method in tqdm(methods, desc="Method", leave=False):
+                        saveto = os.path.join(folder_path_temp, corruption, f'intensity_{intensity}', 'results', f'{method}.npy')
+                        if os.path.exists(saveto):
+                            pass
+                        else:
+                            if features_test is None:
+                                features_test, logits_test, labels_test = get_features_logits_labels(net, 'test', ds_info)
+                            results = get_results(method, 
+                                                  features_test, 
+                                                  logits_test, 
+                                                  labels_test, 
+                                                  calibrators[method], 
+                                                  net, 
+                                                  ds_info)
+                            np.save(saveto, results)
