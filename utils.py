@@ -1,25 +1,14 @@
-from pytorchcv.model_provider import get_model as ptcv_get_model
 from tqdm import tqdm
-from imgclsmob.pytorch.utils import prepare_model as prepare_model_pt
-
 import torch
-from torch import nn
 import torchvision
-import torchvision.transforms as transforms
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 
 import numpy as np
 import os
 
-from scipy.optimize import minimize
-from sklearn import linear_model
-import scipy.stats
-
-from uncertainty_measures import get_uncertainty_measures
-
 def create_folder(path):
     try:
-        os.mkdir(path)
+        os.makedirs(path)
     except OSError:
         pass
 
@@ -37,32 +26,98 @@ def small_large_split(y_data, nsamples, ds_info):
         indices_large[indices_y[rest]] = True
     return indices_small, indices_large
 
+class CIFAR101(Dataset):
+    """CIFAR10.1 dataset."""
+
+    def __init__(self, root, transform=None, target_transform=None):
+        """
+        Args:
+            csv_file (string): Path to the csv file with annotations.
+            root_dir (string): Directory with all the images.
+            transform (callable, optional): Optional transform to be applied
+                on a sample.
+        """
+        if 'v4' in root:
+            images_file = 'cifar10.1_v4_data.npy'
+            labels_file = 'cifar10.1_v4_labels.npy'
+        else:
+            images_file = 'cifar10.1_v6_data.npy'
+            labels_file = 'cifar10.1_v6_labels.npy'
+        self.data = np.load(os.path.join(root,images_file))
+        self.targets = np.load(os.path.join(root,labels_file))
+        self.transform = transform
+        self.target_transform = target_transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, index):
+        """
+        Args:
+            index (int): Index
+        Returns:
+            tuple: (image, target) where target is index of the target class.
+        """
+        img, target = self.data[index], self.targets[index]
+
+        if self.transform is not None:
+            img = self.transform(img)
+
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+
+        return img, target
+
 
 def get_loader(subset, ds_info, shuffle=False):
-    if subset != 'train':
+    if (subset != 'train') and (subset != 'ood'):
         indices = ds_info['indices_'+subset]
     if ds_info['name'] == 'cifar10':
         transform = ds_info['transform']
         dataset = torchvision.datasets.CIFAR10(root=ds_info['root_folder_datasets'], train=subset=='train',
                                                download=False, transform=transform);
-        if subset != 'train':
+        if (subset != 'train') and (subset != 'ood'):
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.targets)[indices]
+        else:
+            dataset.targets = np.array(dataset.targets)
     elif ds_info['name'] == 'cifar100':
         transform = ds_info['transform']
         dataset = torchvision.datasets.CIFAR100(root=ds_info['root_folder_datasets'], train=subset=='train',
                                                download=False, transform=transform);
-        if subset != 'train':
+        if (subset != 'train') and (subset != 'ood'):
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.targets)[indices]
+        else:
+            dataset.targets = np.array(dataset.targets)
     elif ds_info['name'] == 'svhn':
         transform = ds_info['transform']
-        split = 'test' if subset == 'cal' else subset
+        split = 'test' if (subset == 'cal' or subset == 'ood') else subset
         dataset = torchvision.datasets.SVHN(root=ds_info['root_folder_datasets'], split=split,
                                                download=False, transform=transform);
-        if subset != 'train':
+        if (subset != 'train') and (subset != 'ood'):
             dataset.data = dataset.data[indices]
             dataset.targets = np.array(dataset.labels)[indices]
+        else:
+            dataset.targets = np.array(dataset.labels)
+    elif ds_info['name'] == 'stl10':
+        transform = ds_info['transform']
+        split = 'test' if (subset == 'cal' or subset == 'ood') else subset
+        dataset = torchvision.datasets.STL10(root=ds_info['root_folder_datasets'], split=split,
+                                               download=False, transform=transform);
+        if (subset != 'train') and (subset != 'ood'):
+            dataset.data = dataset.data[indices]
+            dataset.targets = np.array(dataset.labels)[indices]
+        else:
+            dataset.targets = np.array(dataset.labels)
+    elif ds_info['name'] == 'cifar10.1-v4':
+        transform = ds_info['transform']
+        dataset = CIFAR101(root=ds_info['root_folder_datasets'], transform=transform);
+        dataset.targets = np.array(dataset.targets)
+    elif ds_info['name'] == 'cifar10.1-v6':
+        transform = ds_info['transform']
+        dataset = CIFAR101(root=ds_info['root_folder_datasets'], transform=transform);
+        dataset.targets = np.array(dataset.targets)
     elif ds_info['name'] == 'imagenet':
         if subset == 'train':
             dataset_dir = os.path.join(ds_info['root_folder_datasets'], 'train')
@@ -93,8 +148,7 @@ def get_features_logits_labels(net, subset, ds_info, save=True):
         start = 0
         end = 0
         with torch.no_grad():
-            suffix_message = " for clean"
-            for data in tqdm(dataloader, desc=f"Generating features, logits and labels"+suffix_message, leave=False):
+            for data in tqdm(dataloader, desc=f"Generating features, logits and labels", leave=False):
                 images, labels = data
                 end += len(images)
                 # compute features and logits
@@ -105,7 +159,7 @@ def get_features_logits_labels(net, subset, ds_info, save=True):
                 else:
                     features[start:end] = features_temp.cpu()            
                 start = end
-        labels = torch.from_numpy(dataloader.dataset.targets)
+        labels = torch.from_numpy(dataloader.dataset.targets).long()
         if save:
             np.save(os.path.join(folder_path, 'features_'+subset+suffix_name), features)
             np.save(os.path.join(folder_path, 'logits_'+subset+suffix_name), logits)

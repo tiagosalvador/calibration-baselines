@@ -1,14 +1,18 @@
-from main import calibrate
+from main import calibrate, evaluate_ood
 
-datasets = ['cifar10', 'cifar100', 'svhn']
+datasets = ['cifar10', 
+#             'cifar100', 
+#             'svhn'
+           ]
 
-methods = ['Vanilla',
-           'TemperatureScaling',
-           'VectorScaling',
-           'MatrixScaling',
-           'MatrixScalingODIR',
-           'DirichletL2',
-           'DirichletODIR',
+methods = [
+#     'Vanilla',
+#     'TemperatureScaling',
+    'VectorScaling',
+#            'MatrixScaling',
+#            'MatrixScalingODIR',
+#            'DirichletL2',
+#            'DirichletODIR',
           ]
 architectures = [
     'densenet40_k12',
@@ -22,3 +26,5 @@ architectures = [
 splitIDs = [0,1,2,3,4]
 
 calibrate(datasets, architectures, methods, splitIDs)
+datasets = ['stl10', 'cifar10.1-v4', 'cifar10.1-v6']
+evaluate_ood('cifar10', datasets, architectures, methods, splitIDs)
