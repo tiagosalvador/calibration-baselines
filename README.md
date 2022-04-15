@@ -14,7 +14,8 @@ Currently the following methods are included:
  - Matrix Scaling (MS)
  - Matrix Scaling w/ ODIR (MS-ODIR)
  - Dirichlet w/ L2 regularization (Dir-L2)
- - Dirichlet w/ ODIR (Dir-ODIR) 
+ - Dirichlet w/ ODIR (Dir-ODIR)
+ - Ensemble Temperature Scaling (ETS)
 
 ## Getting started
 
@@ -55,6 +56,7 @@ The results will be saved in the folder `data`.
 Methods from the following papers were added:
  - [On Calibration of Modern Neural Networks](https://arxiv.org/abs/1706.04599)
  - [Beyond temperature scaling: Obtaining well-calibrated multi-class probabilities with Dirichlet calibration](https://arxiv.org/abs/1910.12656)
+ - [Mix-n-Match: Ensemble and Compositional Methods for Uncertainty Calibration in Deep Learning](https://arxiv.org/abs/2003.07329)
 
 To be added:
  - [Intra Order-preserving Functions for Calibration of Multi-Class Neural Networks](https://arxiv.org/abs/2003.06820)
