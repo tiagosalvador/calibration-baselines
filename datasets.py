@@ -44,6 +44,14 @@ def load_ds_info(dataset, net=None):
             'batch_size': 256,
             'root_folder_datasets': os.path.join(root_folder_datasets, 'cifar100')
         }
+    elif dataset == 'cifar100-c':
+        ds_info = {
+            'name': 'cifar100-c',
+            'num_classes': 100,
+            'transform': transform_cifar10,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'cifar100-c')
+        }
     elif dataset == 'svhn':
         ds_info = {
             'name': 'svhn',
@@ -81,7 +89,7 @@ def load_ds_info(dataset, net=None):
             'name': 'imagenet',
             'num_classes': 1000,
             'transform': transform_imagenet,
-            'batch_size': 128,
+            'batch_size': 512,
             'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet')
         }
 

@@ -168,15 +168,16 @@ def get_features_logits_labels(net, subset, ds_info, save=True):
     experiments_folder = ds_info['folder']
     suffix_name = '.npy'
     folder_path = os.path.join(experiments_folder,'features_logits_labels')
+    features = None
     if os.path.exists(os.path.join(folder_path, 'labels_'+subset+suffix_name)):
-        features = torch.from_numpy(np.load(os.path.join(folder_path, 'features_'+subset+suffix_name)))
+#         features = torch.from_numpy(np.load(os.path.join(folder_path, 'features_'+subset+suffix_name)))
         logits = torch.from_numpy(np.load(os.path.join(folder_path, 'logits_'+subset+suffix_name)))
         labels = torch.from_numpy(np.load(os.path.join(folder_path, 'labels_'+subset+suffix_name)))
     else:
         dataloader = get_loader(subset, ds_info)
         net.eval()
-        features = torch.zeros(len(dataloader.dataset.targets), ds_info['dim_features'])
-        logits = torch.zeros(len(dataloader.dataset.targets), ds_info['num_classes'])
+#         features = torch.zeros(len(dataloader.dataset.targets), ds_info['dim_features'], dtype=float)
+        logits = []
         start = 0
         end = 0
         with torch.no_grad():
@@ -184,16 +185,18 @@ def get_features_logits_labels(net, subset, ds_info, save=True):
                 images, labels = data
                 end += len(images)
                 # compute features and logits
-                features_temp = net.feature_extractor(images.cuda())
-                logits[start:end] = net.output(features_temp).cpu()
-                if 'squeezenet' in ds_info['architecture']:
-                    features[start:end] = features_temp.cpu().reshape(features_temp.shape[0],-1)
-                else:
-                    features[start:end] = features_temp.cpu()            
+#                 features_temp = net.feature_extractor(images.cuda())
+#                 logits.append(net.output(features_temp).cpu())
+                logits.append(net(images.cuda()).cpu())
+#                 if 'squeezenet' in ds_info['architecture']:
+#                     features[start:end] = features_temp.cpu().reshape(features_temp.shape[0],-1)
+#                 else:
+#                     features[start:end] = features_temp.cpu()            
                 start = end
+        logits = torch.cat(logits,dim=0)
         labels = torch.from_numpy(dataloader.dataset.targets).long()
         if save:
-            np.save(os.path.join(folder_path, 'features_'+subset+suffix_name), features)
+#             np.save(os.path.join(folder_path, 'features_'+subset+suffix_name), features)
             np.save(os.path.join(folder_path, 'logits_'+subset+suffix_name), logits)
             np.save(os.path.join(folder_path, 'labels_'+subset+suffix_name), labels)    
 

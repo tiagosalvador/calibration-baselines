@@ -23,6 +23,7 @@ from calibration_methods.temperature_scaling import TemperatureScaling
 from calibration_methods.vector_scaling import VectorScaling
 from calibration_methods.matrix_scaling import MatrixScaling, MatrixScalingODIR
 from calibration_methods.dirichlet_calibration import DirichletL2, DirichletODIR
+from calibration_methods.ensemble_temperature_scaling import EnsembleTemperatureScaling
 
 def get_calibrators(methods, net, ds_info):
     experiments_folder = ds_info['folder']
@@ -56,13 +57,16 @@ def get_calibrators(methods, net, ds_info):
                 elif 'DirichletODIR' == method:
                     calibrator_temp = DirichletODIR(logits_clean_cal.shape[1])
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'EnsembleTemperatureScaling' == method:
+                    calibrator_temp = EnsembleTemperatureScaling()
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
                 calibrators[method] = calibrator_temp
                 np.save(file, calibrator_temp)
     return calibrators
 
 def get_results(method, features_test, logits_test, labels_test, calibrator, net, ds_info):
     if method == 'Vanilla':
-        results = get_uncertainty_measures(logits_test, labels_test)
+        results = get_uncertainty_measures(torch.nn.Softmax(dim=1)(logits_test), labels_test)
     else:
-        results = get_uncertainty_measures(calibrator.predict(logits_test), labels_test)
+        results = get_uncertainty_measures(calibrator.predict_proba(logits_test), labels_test)
     return results

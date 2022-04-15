@@ -106,10 +106,9 @@ def compute_classwise_scores(softmaxes, labels, nbins):
     return ece, ks, ks_l1, brier
 
 
-def get_uncertainty_measures(logits, labels):
+def get_uncertainty_measures(softmaxes, labels):
     results = {}
     
-    softmaxes = nn.Softmax(dim=1)(logits)
     # Compute Accuracy
     confidences, predictions = torch.max(softmaxes, 1)
     accuracies = predictions.eq(labels)
@@ -124,11 +123,11 @@ def get_uncertainty_measures(logits, labels):
     results['cw_ece_eq_mass'], results['cw_ks'], results['cw_ks_l1'], results['cw_brier'] = compute_classwise_scores(softmaxes, labels, 15)
     
     # NLL (Negative Log-Likelihood)
-    nll_criterion = nn.CrossEntropyLoss(reduction='none')
-    results['nll'] = torch.mean(nll_criterion(logits, labels)).item()
+    nll_criterion = nn.NLLLoss(reduction='none')
+    results['nll'] = torch.mean(nll_criterion(torch.log(softmaxes), labels)).item()
     
     ## Transform to onehot encoded labels
-    labels_onehot = torch.FloatTensor(logits.shape[0], logits.shape[1])
+    labels_onehot = torch.FloatTensor(softmaxes.shape[0], softmaxes.shape[1])
     labels_onehot.zero_()
     labels_onehot.scatter_(1, labels.long().view(len(labels), 1), 1)
     results['brier'] = torch.mean(torch.sum((softmaxes - labels_onehot) ** 2, dim=1,keepdim = True)).item()

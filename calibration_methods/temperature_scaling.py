@@ -3,7 +3,7 @@ from scipy.optimize import minimize
 
 class TemperatureScaling():
     
-    def __init__(self, temp = 1, maxiter = 50, solver = "BFGS"):
+    def __init__(self, temp = 1, loss = 'ce', maxiter = 50, solver = "BFGS"):
         """
         Initialize class
         
@@ -12,12 +12,22 @@ class TemperatureScaling():
             maxiter (int): maximum iterations done by optimizer, however 8 iterations have been maximum.
         """
         self.temp = temp
+        self.loss = loss
         self.maxiter = maxiter
         self.solver = solver
     
-    def _loss_fun(self, T, logits, labels):
+    def _ce_loss_fun(self, T, logits, labels):
         # Calculates the cross-entropy loss
         loss = torch.nn.CrossEntropyLoss()(logits/T, labels)
+        return loss
+    
+    
+    def _mse_loss_fun(self, T, logits, labels):
+        # Calculates the MSE loss
+        labels_onehot = torch.FloatTensor(logits.shape[0], logits.shape[1])
+        labels_onehot.zero_()
+        labels_onehot.scatter_(1, labels.long().view(len(labels), 1), 1)
+        loss = torch.mean(torch.sum((torch.nn.Softmax(dim=1)(logits/T) - labels_onehot) ** 2, dim=1,keepdim = True))
         return loss
     
     # Find the temperature
@@ -33,7 +43,10 @@ class TemperatureScaling():
             the results of optimizer after minimizing is finished.
         """
         
-        opt = minimize(self._loss_fun, x0 = 1, args=(logits, labels), options={'maxiter':self.maxiter}, method = self.solver)
+        if self.loss == 'ce':
+            opt = minimize(self._ce_loss_fun, x0 = 1, args=(logits, labels), options={'maxiter':self.maxiter}, method = self.solver)
+        elif self.loss == 'mse':
+            opt = minimize(self._mse_loss_fun, x0 = 1, args=(logits, labels), options={'maxiter':self.maxiter}, method = self.solver)
         self.temp = opt.x[0]
         
         if verbose:

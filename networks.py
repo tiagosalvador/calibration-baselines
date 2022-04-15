@@ -1,4 +1,5 @@
 import torch
+import torchvision
 from torch import nn
 
 from pytorchcv.model_provider import get_model as ptcv_get_model
@@ -91,7 +92,7 @@ class FeatureExtractorWrapper(nn.Module):
             x = self.fc(x)
         elif 'mobilenet' in self.architecture:
             x = self.classifier(x)
-        elif 'resnet' in architecture or 'resnext' in architecture:
+        elif ('resnet' in self.architecture) or ('resnext' in self.architecture):
             x = self.fc(x)
         elif 'mnasnet' in self.architecture:
             x = self.classifier(x)
@@ -240,7 +241,10 @@ def load_net(dataset, architecture, device):
             raise ValueError("Unsupported model: {}".format(architecture))
         net = FeatureExtractorWrapper(net_ft, architecture)
         if 'cuda' in device.type:
-            net.feature_extractor = nn.DataParallel(net.feature_extractor, device_ids=[0,1])
-            net.output = nn.DataParallel(net.output, device_ids=[0, 1])
+#             net.feature_extractor = nn.DataParallel(net.feature_extractor)#, device_ids=[0,1])
+#             net.output = nn.DataParallel(net.output)#, device_ids=[0,1])
+            net = nn.DataParallel(net, device_ids=[0,1])
+            net.architecture = net.module.architecture
+            net.dim_features = net.module.dim_features
     net.to(device);
     return net

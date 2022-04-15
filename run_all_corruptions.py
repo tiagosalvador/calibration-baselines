@@ -4,11 +4,12 @@ methods = [
     'Vanilla',
     'TemperatureScaling',
     'VectorScaling',
-    'MatrixScaling',
-#        'MatrixScalingODIR',
-#        'DirichletL2',
-#        'DirichletODIR',
-          ]
+#     'MatrixScaling',
+#     'MatrixScalingODIR',
+#     'DirichletL2',
+#     'DirichletODIR',
+]
+
 architectures = [
     'densenet40_k12',
     'resnet20',
@@ -26,4 +27,4 @@ corruptions = ['brightness', 'contrast', 'defocus_blur', 'elastic_transform', 'f
  'pixelate', 'saturate', 'shot_noise', 'snow', 'spatter', 'speckle_noise', 'zoom_blur']
 intensities = [1,2,3,4,5]
 
-evaluate_corrupted('cifar10', corruptions, intensities, architectures, methods, splitIDs)
+evaluate_corrupted('cifar100', corruptions, intensities, architectures, methods, splitIDs)
