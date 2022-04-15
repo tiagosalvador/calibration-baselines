@@ -8,27 +8,33 @@ datasets = [
 ]
 
 methods = [
-    'Vanilla',
-    'TemperatureScaling',
-#     'VectorScaling',
+#     'Vanilla',
+#     'TemperatureScaling',
+#     'TemperatureScalingMSE',
+    'VectorScaling',
 #     'MatrixScaling',
 #     'MatrixScalingODIR',
 #     'DirichletL2',
 #     'DirichletODIR',
-    'EnsembleTemperatureScaling',
+#     'EnsembleTemperatureScaling',
+#     'EnsembleTemperatureScalingCE',
+#     'IRM',
+#     'IRMTS',
+#     'IROvA',
+#     'IROvATS',
 ]
 architectures = [
 #     'densenet40_k12',
 #     'resnet20',
-#     'resnet56',
-#     'resnet110',
+# #     'resnet56',
+# #     'resnet110',
 #     'wrn16_10',
 #     'wrn28_10',
 #     'wrn40_8'
-    'vgg19',
-    'densenet161',
-    'wide_resnet101_2',
-    'resnext101_32x8d',
+#     'vgg19',
+#     'densenet161',
+#     'wide_resnet101_2',
+#     'resnext101_32x8d',
     'resnet50'
 ]
 

@@ -49,6 +49,7 @@ class EnsembleTemperatureScaling():
         
         
         # First, we compute temperature scaling
+        logits = logits.double()
         ts_calibrator = TemperatureScaling(loss=self.loss)
         ts_calibrator.fit(logits, labels)
         self.temp = ts_calibrator.temp
@@ -63,7 +64,7 @@ class EnsembleTemperatureScaling():
         if self.loss == 'ce':
             opt = minimize(self._ce_loss_fun, (1.0, 0.0, 0.0) , args = (p0,p1,p2,labels), method='SLSQP', constraints = constraints, bounds=bnds_w, tol=1e-12, options={'disp': verbose})
         elif self.loss == 'mse':
-            opt = minimize(self._mse_loss_fun, (1.0, 0.0, 0.0) , args = (p0,p1,p2,labels), method='SLSQP', constraints = constraints, bounds=bnds_w, tol=1e-10, options={'disp': verbose})
+            opt = minimize(self._mse_loss_fun, (1.0, 0.0, 0.0) , args = (p0,p1,p2,labels), method='SLSQP', constraints = constraints, bounds=bnds_w, tol=1e-12, options={'disp': verbose})
         self.w = opt.x
         if verbose:
             print(f'Temperature: {self.temp:1.2f}'+" Weights = " +str(self.w))

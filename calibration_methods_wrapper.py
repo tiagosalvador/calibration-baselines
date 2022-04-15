@@ -24,6 +24,11 @@ from calibration_methods.vector_scaling import VectorScaling
 from calibration_methods.matrix_scaling import MatrixScaling, MatrixScalingODIR
 from calibration_methods.dirichlet_calibration import DirichletL2, DirichletODIR
 from calibration_methods.ensemble_temperature_scaling import EnsembleTemperatureScaling
+from calibration_methods.irova import IROvA
+from calibration_methods.irova_ts import IROvATS
+from calibration_methods.irm import IRM
+from calibration_methods.irm_ts import IRMTS
+
 
 def get_calibrators(methods, net, ds_info):
     experiments_folder = ds_info['folder']
@@ -42,6 +47,9 @@ def get_calibrators(methods, net, ds_info):
                 if 'TemperatureScaling' == method:
                     calibrator_temp = TemperatureScaling()
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'TemperatureScalingMSE' == method:
+                    calibrator_temp = TemperatureScaling(loss='mse')
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
                 elif 'VectorScaling' == method:
                     calibrator_temp = VectorScaling()
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
@@ -59,6 +67,21 @@ def get_calibrators(methods, net, ds_info):
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
                 elif 'EnsembleTemperatureScaling' == method:
                     calibrator_temp = EnsembleTemperatureScaling()
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'EnsembleTemperatureScalingCE' == method:
+                    calibrator_temp = EnsembleTemperatureScaling(loss='ce')
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'IRM' == method:
+                    calibrator_temp = IRM()
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'IRMTS' == method:
+                    calibrator_temp = IRMTS()
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'IROvA' == method:
+                    calibrator_temp = IROvA()
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'IROvATS' == method:
+                    calibrator_temp = IROvATS()
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
                 calibrators[method] = calibrator_temp
                 np.save(file, calibrator_temp)
