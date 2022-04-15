@@ -16,6 +16,10 @@ Currently the following methods are included:
  - Dirichlet w/ L2 regularization (Dir-L2)
  - Dirichlet w/ ODIR (Dir-ODIR)
  - Ensemble Temperature Scaling (ETS)
+ - Accuracy preserving Isotonic Regression (IRM)
+ - Accuracy preserving Isotonic Regression with Temperature Scaling (IRM-TS)
+ - Isotonic Regression One vs All (IROvA)
+ - Isotonic Regression One vs All with Temperature Scaling (IROvA-TS)
 
 ## Getting started
 
