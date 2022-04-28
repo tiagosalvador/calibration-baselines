@@ -29,21 +29,23 @@ from calibration_methods.irova_ts import IROvATS
 from calibration_methods.irm import IRM
 from calibration_methods.irm_ts import IRMTS
 
+from calibration_methods_ood.perturbed import Perturbed
+
 
 def get_calibrators(methods, net, ds_info):
     experiments_folder = ds_info['folder']
     logits_clean_cal = None
     calibrators = {}
     for method in tqdm(methods, desc="Prepping Methods", leave=False):
-        file = os.path.join(experiments_folder,'calibration_methods', method+'.npy')
+        file = os.path.join(experiments_folder, 'calibration_methods', method+'.npy')
         if os.path.exists(file):
             calibrators[method] = np.load(file, allow_pickle=True).item()
         else:
-            if logits_clean_cal is None:
-                features_clean_cal, logits_clean_cal, labels_clean_cal = get_features_logits_labels(net, 'cal', ds_info)
             if method == 'Vanilla':
                 calibrators[method] = None
             else:
+                if logits_clean_cal is None:
+                    features_clean_cal, logits_clean_cal, labels_clean_cal = get_features_logits_labels(net, 'cal', ds_info)
                 if 'TemperatureScaling' == method:
                     calibrator_temp = TemperatureScaling()
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
@@ -83,6 +85,10 @@ def get_calibrators(methods, net, ds_info):
                 elif 'IROvATS' == method:
                     calibrator_temp = IROvATS()
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif '-P' in method:
+                    iid_method, _ = method.split('-')
+                    calibrator_temp = Perturbed(method=iid_method)
+                    calibrator_temp.fit(net, ds_info)
                 calibrators[method] = calibrator_temp
                 np.save(file, calibrator_temp)
     return calibrators

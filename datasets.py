@@ -92,7 +92,62 @@ def load_ds_info(dataset, net=None):
             'batch_size': 512,
             'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet')
         }
-
+    elif dataset == 'imagenet-c':
+        ds_info = {
+            'name': 'imagenet-c',
+            'num_classes': 1000,
+            'transform': transform_imagenet,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet-c')
+        }
+    elif dataset == 'imagenet-v2-mf':
+        ds_info = {
+            'name': 'imagenet-v2-mf',
+            'num_classes': 1000,
+            'transform': transform_imagenet,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet-v2-mf')
+        }
+    elif dataset == 'imagenet-v2-thr':
+        ds_info = {
+            'name': 'imagenet-v2-thr',
+            'num_classes': 1000,
+            'transform': transform_imagenet,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet-v2-thr')
+        }
+    elif dataset == 'imagenet-v2-ti':
+        ds_info = {
+            'name': 'imagenet-v2-ti',
+            'num_classes': 1000,
+            'transform': transform_imagenet,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet-v2-ti')
+        }
+    elif dataset == 'imagenet-sketch':
+        ds_info = {
+            'name': 'imagenet-sketch',
+            'num_classes': 1000,
+            'transform': transform_imagenet,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet-sketch')
+        }
+    elif dataset == 'imagenet-a':
+        ds_info = {
+            'name': 'imagenet-a',
+            'num_classes': 1000,
+            'transform': transform_imagenet,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet-a')
+        }
+    elif dataset == 'imagenet-r':
+        ds_info = {
+            'name': 'imagenet-r',
+            'num_classes': 1000,
+            'transform': transform_imagenet,
+            'batch_size': 256,
+            'root_folder_datasets': os.path.join(root_folder_datasets, 'imagenet-r')
+        }
     if net is not None:
         ds_info['architecture'] = net.architecture    
         ds_info['dim_features'] = net.dim_features

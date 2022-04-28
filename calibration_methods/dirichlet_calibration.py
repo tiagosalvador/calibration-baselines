@@ -32,5 +32,5 @@ def DirichletL2(num_classes):
     lambdas = sorted(np.concatenate([lambdas, lambdas*0.25, lambdas*0.5]))
     gscv = GridSearchCV(calibrator,
                         param_grid={'reg_lambda':  lambdas},
-                        cv=skf, scoring='neg_log_loss', refit=True, verbose=2, n_jobs=5)
+                        cv=skf, scoring='neg_log_loss', refit=True, verbose=0, n_jobs=5)
     return gscv

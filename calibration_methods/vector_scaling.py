@@ -84,7 +84,6 @@ class VectorScaling():
         Returns:
             the results of optimizer after minimizing is finished.
         """
-        tqdm.write(str(logits.type()))
         num_classes = logits.shape[1]
         self.model = DiagonalModel(num_classes=num_classes, W_init=W_init, b_init=b_init)
         logits_dataloader = DataLoader(LogitsDataset(logits, labels), batch_size=batch_size, shuffle=True)

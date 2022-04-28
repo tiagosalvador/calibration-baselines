@@ -98,9 +98,9 @@ class FeatureExtractorWrapper(nn.Module):
             x = self.classifier(x)
         return x
     def forward(self, x):
-        x = self.feature_extractor(x)
-        x = self.output(x)
-        return x
+        features = self.feature_extractor(x)
+        logits = self.output(features)
+        return features, logits
     
 class FeatureExtractorWrapperCIFAR10(nn.Module):
     def __init__(self, model, architecture):
@@ -109,10 +109,17 @@ class FeatureExtractorWrapperCIFAR10(nn.Module):
         self.output = model.output
         self.architecture = architecture
         self.dim_features = model.output.in_features
+        self.parallel = False
+    
     def feature_extractor(self, x):
         x = self.features(x)
         x = torch.flatten(x, 1)
         return x
+    
+    def forward(self,x):
+        features = self.feature_extractor(x)
+        logits = self.output(features)
+        return features, logits
 
 def load_net(dataset, architecture, device):
     if (dataset == 'cifar10') or (dataset == 'cifar100') or (dataset == 'svhn'):
@@ -241,10 +248,10 @@ def load_net(dataset, architecture, device):
             raise ValueError("Unsupported model: {}".format(architecture))
         net = FeatureExtractorWrapper(net_ft, architecture)
         if 'cuda' in device.type:
-#             net.feature_extractor = nn.DataParallel(net.feature_extractor)#, device_ids=[0,1])
-#             net.output = nn.DataParallel(net.output)#, device_ids=[0,1])
             net = nn.DataParallel(net, device_ids=[0,1])
             net.architecture = net.module.architecture
             net.dim_features = net.module.dim_features
+            net.parallel = True
+
     net.to(device);
     return net
