@@ -4,7 +4,18 @@ The goal of Calibration Baselines is to provide a starting point into post-hoc c
 
 ## Requirements
 
-TBD
+os\
+tqdm\
+wget\
+tarfile\
+torch\
+torchvision\
+pytorchcv\
+numpy\
+scipy\
+sklearn
+
+Check as well the specific requirements for imgclsmob included in its folder.
 
 ## Methods
 
@@ -21,11 +32,12 @@ Currently the following methods are included:
  - Isotonic Regression One vs All (IROvA)
  - Isotonic Regression One vs All with Temperature Scaling (IROvA-TS)
 
-## Getting started
+## Datasets
 
-Create a folder named 'datasets' and place your datasets there.
-
-## Methods
+Create a folder named 'datasets' and place your datasets there. Alternatively, to download all datasets, except ImageNet, simply run
+```bash
+python download_datasets.py
+```
 
 Currently the following datasets are supported:
  - [CIFAR-10/100](https://www.cs.toronto.edu/~kriz/cifar.html)
@@ -36,11 +48,7 @@ The following datasets are available to evaluate ood calibration:
  -  [CIFAR-10/100-C](https://github.com/hendrycks/robustness)
  -  [STL10](https://cs.stanford.edu/~acoates/stl10/)
  -  [CIFAR-10.1 (v4, v6)](https://github.com/modestyachts/CIFAR-10.1)
-
-To download all datasets, except ImageNet, simply run
-```bash
-python download_datasets.py
-```
+ -  [ImageNet-V2](https://github.com/modestyachts/ImageNetV2)
 
 
 ## Training/Evaluation
