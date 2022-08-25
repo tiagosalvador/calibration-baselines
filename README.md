@@ -1,6 +1,6 @@
 # Calibration Baselines
 
-The goal of Calibration Baseliens is to provide a starting point into post-hoc calibration. It is challenging to compare post-hoc calibration methods as they require a pre-trained model whose choice greatly impacts the final calibration. Therefore all methods need to be compared based on the same pre-trained model. By implementing current state-of-the-art methods with simple and concise code, this repo will ease the burden of researchers starting in the field.
+The goal of Calibration Baselines is to provide a starting point into post-hoc calibration. It is challenging to compare post-hoc calibration methods as they require a pre-trained model whose choice greatly impacts the final calibration. Therefore all methods need to be compared based on the same pre-trained model. By implementing current state-of-the-art methods with simple and concise code, this repo will ease the burden of researchers starting in the field.
 
 ## Requirements
 
