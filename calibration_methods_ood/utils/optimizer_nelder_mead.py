@@ -237,7 +237,7 @@ def minimize_neldermead(func, x0, args=(), tol_abs=0.02, nonzdelt=0.5,
 
     x = sim[0]
     fval = np.min(fsim)
-    print("x: ", x)
-    print("f: ", fval)
+#     print("x: ", x)
+#     print("f: ", fval)
 
     return x

@@ -28,9 +28,11 @@ from calibration_methods.irova import IROvA
 from calibration_methods.irova_ts import IROvATS
 from calibration_methods.irm import IRM
 from calibration_methods.irm_ts import IRMTS
+from calibration_methods.ccac import CCAC
 
 from calibration_methods_ood.perturbed import Perturbed
-
+from calibration_methods_ood.adaptive_perturbed import AdaptivePerturbed
+from calibration_methods_ood.forged import Forged_v1
 
 def get_calibrators(methods, net, ds_info):
     experiments_folder = ds_info['folder']
@@ -73,6 +75,12 @@ def get_calibrators(methods, net, ds_info):
                 elif 'EnsembleTemperatureScalingCE' == method:
                     calibrator_temp = EnsembleTemperatureScaling(loss='ce')
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'CCAC' == method:
+                    calibrator_temp = CCAC(method='CCAC')
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                elif 'CCAC-S' == method:
+                    calibrator_temp = CCAC(method='CCAC-S')
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
                 elif 'IRM' == method:
                     calibrator_temp = IRM()
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
@@ -85,10 +93,35 @@ def get_calibrators(methods, net, ds_info):
                 elif 'IROvATS' == method:
                     calibrator_temp = IROvATS()
                     calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
-                elif '-P' in method:
+                elif ('-P' in method) and ('-PMAX' not in method):
                     iid_method, _ = method.split('-')
                     calibrator_temp = Perturbed(method=iid_method)
                     calibrator_temp.fit(net, ds_info)
+                elif '-AP' in method:
+                    iid_method, _, metric = method.split('-')
+                    calibrator_temp = AdaptivePerturbed(method=iid_method, metric=metric)
+                    calibrator_temp.fit(net, ds_info)
+                    for aux in ['ATCPMAX', 'ATCNE', 'ATCNGY']:
+                        calibrator_temp.metric = aux
+                        np.save(os.path.join(experiments_folder, 'calibration_methods', f'{iid_method}-AP-{aux}.npy'), calibrator_temp)
+                    calibrator_temp.metric = metric    
+
+                elif '-FV1' in method:
+                    iid_method, _, metric = method.split('-')
+                    calibrator_temp = Forged_v1(method=iid_method, metric=metric)
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                    for aux in ['PMAX', 'NE', 'NGY', 'ATCPMAX', 'ATCNE', 'ATCNGY']:
+                        calibrator_temp.metric = aux
+                        np.save(os.path.join(experiments_folder, 'calibration_methods', f'{iid_method}-FV1-{aux}.npy'), calibrator_temp)
+                    calibrator_temp.metric = metric    
+                elif '-FV2' in method:
+                    iid_method, _, metric = method.split('-')
+                    calibrator_temp = Forged_v1(method=iid_method, metric=metric, nsets=25)
+                    calibrator_temp.fit(logits_clean_cal, labels_clean_cal)
+                    for aux in ['PMAX', 'NE', 'NGY', 'ATCPMAX', 'ATCNE', 'ATCNGY']:
+                        calibrator_temp.metric = aux
+                        np.save(os.path.join(experiments_folder, 'calibration_methods', f'{iid_method}-FV2-{aux}.npy'), calibrator_temp)
+                    calibrator_temp.metric = metric    
                 calibrators[method] = calibrator_temp
                 np.save(file, calibrator_temp)
     return calibrators

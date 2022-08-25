@@ -168,77 +168,121 @@ def estimate_epsilons(
     return epsilons
     
 
-class Perturbed():    
-    def __init__(self, method='TemperatureScaling'):
+def get_pmax(logits):
+    return torch.nn.Softmax(dim=1)(logits).max(dim=1).values
+
+def get_entropy(logits):
+    softmaxes = torch.nn.Softmax(dim=1)(logits)
+    entropy = -softmaxes * torch.log(softmaxes + 1e-7)
+    entropy = torch.sum(entropy, dim=1)
+    return -entropy
+
+def get_energy(logits, T=1.0):
+    return T*torch.logsumexp(logits/T, dim=1)
+    
+    
+class AdaptivePerturbed():    
+    def __init__(self, method='TemperatureScaling', metric='ATCPMAX'):
         self.method = method
+        self.metric = metric
     
     def fit(self, net, ds_info):
-        base_file_path = os.path.join(ds_info['folder'], 'calibration_methods', 'perturbed_init')
+        base_file_path = os.path.join(ds_info['folder'], 'calibration_methods', 'adaptive_perturbed_init')
         if os.path.exists(os.path.join(base_file_path, 'labels.npy')):
-            logits_all = torch.from_numpy(np.load(os.path.join(base_file_path, 'logits.npy')))
-            labels_all = torch.from_numpy(np.load(os.path.join(base_file_path, 'labels.npy'))).long()
+            logits_all = np.load(os.path.join(base_file_path, 'logits.npy'), allow_pickle=True).item()
+            labels_all = np.load(os.path.join(base_file_path, 'labels.npy'), allow_pickle=True).item()
             epsilons = np.load(os.path.join(base_file_path, 'epsilons.npy'))
+            acc_all = np.load(os.path.join(base_file_path, 'accs.npy'), allow_pickle=True).item()
         else:
             epsilons = estimate_epsilons('cal', net, ds_info)
             # Gather the logits and labels for the different epsilons
-            logits_all = torch.zeros(0, ds_info['num_classes'])
-            labels_all = torch.zeros(0).long()
+            logits_all = {}
+            labels_all = {}
+            acc_all = {}
             for epsilon in epsilons:
                 logits, labels = get_logits_labels_epsilon(epsilon, 'cal', net, ds_info)
-                logits_all = torch.vstack((logits_all, logits))
-                labels_all = torch.hstack((labels_all, labels))
-            create_folder(os.path.join(ds_info['folder'], 'calibration_methods', 'perturbed_init'))
-            np.save(os.path.join(ds_info['folder'], 'calibration_methods', 'perturbed_init', 'logits.npy'), logits_all)
-            np.save(os.path.join(ds_info['folder'], 'calibration_methods', 'perturbed_init', 'labels.npy'), labels_all)
-            np.save(os.path.join(ds_info['folder'], 'calibration_methods', 'perturbed_init', 'epsilons.npy'), epsilons)
+                logits_all[epsilon] = logits
+                labels_all[epsilon] = labels
+                acc_all[epsilon] = (torch.sum(logits.argmax(dim=1) == labels)/len(labels)).item()
+            create_folder(os.path.join(ds_info['folder'], 'calibration_methods', 'adaptive_perturbed_init'))
+            np.save(os.path.join(ds_info['folder'], 'calibration_methods', 'adaptive_perturbed_init', 'logits.npy'), logits_all)
+            np.save(os.path.join(ds_info['folder'], 'calibration_methods', 'adaptive_perturbed_init', 'labels.npy'), labels_all)
+            np.save(os.path.join(ds_info['folder'], 'calibration_methods', 'adaptive_perturbed_init', 'epsilons.npy'), epsilons)
+            np.save(os.path.join(ds_info['folder'], 'calibration_methods', 'adaptive_perturbed_init', 'accs.npy'), acc_all)
 
+            
+        self.acc_cal = (logits_all[0.0].argmax(dim=1) == labels_all[0.0]).float().mean().item()
+        self.pmax_cal = get_pmax(logits_all[0.0])
+        self.entropy_cal = get_entropy(logits_all[0.0])
+        self.energy_cal = get_energy(logits_all[0.0])
+            
         self.epsilons = epsilons
-        
-        if 'TemperatureScaling' == self.method:
-            calibrator = TemperatureScaling()
-            calibrator.fit(logits_all, labels_all)
-        elif 'TemperatureScalingMSE' == self.method:
-            calibrator = TemperatureScaling(loss='mse')
-            calibrator.fit(logits_all, labels_all)
-        elif 'VectorScaling' == self.method:
-            calibrator = VectorScaling()
-            calibrator.fit(logits_all, labels_all)
-        elif 'MatrixScaling' == self.method:
-            calibrator = MatrixScaling()
-            calibrator.fit(logits_all, labels_all)
-        elif 'MatrixScalingODIR' == self.method:
-            calibrator = MatrixScalingODIR(logits_all.shape[1])
-            calibrator.fit(logits_all, labels_all)
-        elif 'DirichletL2' == self.method:
-            calibrator = DirichletL2(logits_all.shape[1])
-            calibrator.fit(logits_all, labels_all)
-        elif 'DirichletODIR' == self.method:
-            calibrator = DirichletODIR(logits_all.shape[1])
-            calibrator.fit(logits_all, labels_all)
-        elif 'EnsembleTemperatureScaling' == self.method:
-            calibrator = EnsembleTemperatureScaling()
-            calibrator.fit(logits_all, labels_all)
-        elif 'EnsembleTemperatureScalingCE' == self.method:
-            calibrator = EnsembleTemperatureScaling(loss='ce')
-            calibrator.fit(logits_all, labels_all)
-        elif 'IRM' == self.method:
-            calibrator = IRM()
-            calibrator.fit(logits_all, labels_all)
-        elif 'IRMTS' == self.method:
-            calibrator = IRMTS()
-            calibrator.fit(logits_all, labels_all)
-        elif 'IROvA' == self.method:
-            calibrator = IROvA()
-            calibrator.fit(logits_all, labels_all)
-        elif 'IROvATS' == self.method:
-            calibrator = IROvATS()
-            calibrator.fit(logits_all, labels_all)
+        self.accs = np.array([acc_all[key] for key in acc_all])
+        calibrator = {}
+        for epsilon in epsilons:
+            if 'TemperatureScaling' == self.method:
+                calibrator[epsilon] = TemperatureScaling()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'TemperatureScalingMSE' == self.method:
+                calibrator[epsilon] = TemperatureScaling(loss='mse')
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'VectorScaling' == self.method:
+                calibrator[epsilon] = VectorScaling()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'MatrixScaling' == self.method:
+                calibrator[epsilon] = MatrixScaling()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'MatrixScalingODIR' == self.method:
+                calibrator[epsilon] = MatrixScalingODIR(logits_all[epsilon].shape[1])
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'DirichletL2' == self.method:
+                calibrator[epsilon] = DirichletL2(logits_all[epsilon].shape[1])
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'DirichletODIR' == self.method:
+                calibrator[epsilon] = DirichletODIR(logits_all[epsilon].shape[1])
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'EnsembleTemperatureScaling' == self.method:
+                calibrator[epsilon] = EnsembleTemperatureScaling()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'EnsembleTemperatureScalingCE' == self.method:
+                calibrator[epsilon] = EnsembleTemperatureScaling(loss='ce')
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'IRM' == self.method:
+                calibrator[epsilon] = IRM()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'IRMTS' == self.method:
+                calibrator[epsilon] = IRMTS()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'IROvA' == self.method:
+                calibrator[epsilon] = IROvA()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
+            elif 'IROvATS' == self.method:
+                calibrator[epsilon] = IROvATS()
+                calibrator[epsilon].fit(logits_all[epsilon], labels_all[epsilon])
         self.calibrator = calibrator
-        
-        
+
+
     def predict_proba(self, logits):
-        return self.calibrator.predict_proba(logits)
+        if self.metric == 'ATCPMAX':
+            pmax_test = get_pmax(logits)
+            acc_test = (pmax_test>np.quantile(self.pmax_cal,1-self.acc_cal)).float().mean().item()
+        elif self.metric == 'ATCNE':
+            entropy_test = get_entropy(logits)
+            acc_test = (entropy_test>np.quantile(self.entropy_cal,1-self.acc_cal)).float().mean().item()
+        elif self.metric == 'ATCNGY':
+            energy_test = get_energy(logits)
+            acc_test = (energy_test>np.quantile(self.energy_cal,1-self.acc_cal)).float().mean().item()
+        return self.calibrator[self.epsilons[np.abs(acc_test-self.accs).argmin()]].predict_proba(logits)
 
 
     def predict(self, logits):
-        return self.calibrator.predict(logits)
+        if self.metric == 'ATCPMAX':
+            pmax_test = get_pmax(logits)
+            acc_test = (pmax_test>np.quantile(self.pmax_cal,1-self.acc_cal)).float().mean().item()
+        elif self.metric == 'ATCNE':
+            entropy_test = get_entropy(logits)
+            acc_test = (entropy_test>np.quantile(self.entropy_cal,1-self.acc_cal)).float().mean().item()
+        elif self.metric == 'ATCNGY':
+            energy_test = get_energy(logits)
+            acc_test = (energy_test>np.quantile(self.energy_cal,1-self.acc_cal)).float().mean().item()
+        return self.calibrator[self.epsilons[np.abs(acc_test-self.accs).argmin()]].predict(logits)
