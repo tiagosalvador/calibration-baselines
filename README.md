@@ -45,15 +45,29 @@ python download_datasets.py
 
 ## Training/Evaluation
 
-To train and evaluate the post-hoc calibration methods:
+To train and evaluate some of the post-hoc calibration methods on CIFAR10 use the command
 
 ```bash
-python run_all_experiments.py
+python run_cifar10.py
 ```
 
 ## Results
 
-The results will be saved in the folder `data`. 
+The results will be saved in the folder `data`. Here are some preliminary results for CIFAR10. For the same architecture, each model is calibrated 5 times on 5 different splits and the results are averaged. Below we display the Top1 ECE calibration error.
+
+#### CIFAR10 - IID Calibration
+
+|    Architecture    | Vanilla |  TS  |  VS  |  MS  | MS-ODIR | Dir-L2 | Dir-ODIR |  ETS |    IRM.  |   IROvA   |
+|:------------------:|:-------:|:----:|:----:|:----:|:-------:|:------:|:--------:|:----:|:--------:|:---------:|
+| DenseNet-40 (k=12) |    2.14 | 2.15 | 1.65 | 1.62 |    1.76 |   1.79 |     1.79 | 2.64 | **0.85** |    0.88   |
+|           ResNet20 |    1.18 | 1.03 | 1.01 | 1.09 |    1.12 |   0.98 |     1.11 | 1.18 | **0.75** |    0.79   |
+|           ResNet56 |    2.47 | 2.06 | 1.68 | 1.84 |    1.73 |   2.23 |     1.74 | 2.85 | **0.54** |    0.85   |
+|          WRN-16-10 |    0.82 | 0.69 | 0.82 | 0.90 |    0.82 |   0.78 |     0.83 | 1.03 |   0.62   |  **0.53** |
+|          WRN-28-10 |    1.36 | 1.39 | 1.11 | 1.07 |    1.09 |   1.36 |     1.10 | 2.14 | **0.52** |    0.63   |
+
+#### CIFAR10 - OOD Calibration (CIFAR10-C)
+
+![Preliminary Results CIFAR10-C](assets/prelim_results_CIFAR10-C.png)
 
 ## References
 
