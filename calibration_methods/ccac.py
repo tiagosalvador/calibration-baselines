@@ -14,7 +14,7 @@ from sklearn.base import BaseEstimator, RegressorMixin
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import make_scorer
 
-from uncertainty_measures import get_ece
+from utils.uncertainty_measures import get_ece
 
 def CCAC(method):
     skf = StratifiedKFold(n_splits=3, shuffle=True, random_state=0)

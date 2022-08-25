@@ -13,7 +13,7 @@ from calibration_methods.irova_ts import IROvATS
 from calibration_methods.irm import IRM
 from calibration_methods.irm_ts import IRMTS
 
-from utils import get_loader, create_folder
+from utils.utils import get_loader, create_folder
 import torchvision.transforms as transforms
 
 

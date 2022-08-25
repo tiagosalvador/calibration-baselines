@@ -11,8 +11,8 @@ from torch.utils.data import Dataset, DataLoader
 import numpy as np
 import os
 
-from utils import create_folder, get_features_logits_labels
-from uncertainty_measures import get_uncertainty_measures
+from utils.utils import create_folder, get_features_logits_labels
+from utils.uncertainty_measures import get_uncertainty_measures
 
 from scipy import optimize
 from scipy.optimize import minimize

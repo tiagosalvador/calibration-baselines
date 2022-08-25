@@ -3,7 +3,7 @@ import torch
 import torchvision
 from torch.utils.data import DataLoader, Dataset
 
-from imagenetv2 import ImageNetv2
+from utils.imagenetv2 import ImageNetv2
 
 import numpy as np
 import os

@@ -1,4 +1,4 @@
-root_folder_experiments = 'experiments'
+root_folder_experiments = 'experiments_cifar10'
 root_folder_data = 'data'
 
 from tqdm import tqdm
@@ -9,10 +9,10 @@ import numpy as np
 import os
 import pandas as pd
 
-from utils import create_folder, small_large_split, get_features_logits_labels
+from utils.utils import create_folder, small_large_split, get_features_logits_labels
 from calibration_methods_wrapper import get_calibrators, get_results
-from networks import load_net
-from datasets import load_ds_info
+from utils.networks import load_net
+from utils.datasets import load_ds_info
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 experiment_name = 'standard'
