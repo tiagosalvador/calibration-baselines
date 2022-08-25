@@ -13,7 +13,7 @@ torchvision\
 pytorchcv\
 numpy\
 scipy\
-sklearn\
+sklearn
 
 Check as well the specific requirements for imgclsmob included in its folder.
 
